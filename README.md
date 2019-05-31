@@ -25,10 +25,14 @@ yarn add gd-router
 ```
 // server.js
 
-const path = require('path')
 const { Server } = require('gd-router')
 
-new Server().start(3000, path.resolve('./routes'))
+/**
+ * Starts G** D*** Server
+ * @param {int}     port        [optional] Port number (Default: 3000)
+ * @param {string}  routesDir   [optional] Routes directory (Default: './routes')
+ */
+new Server().start()
 ```
 
 ```
@@ -38,9 +42,16 @@ const { Controller } = require('gd-router')
 
 class HelloController extends Controller
 {
+    /**
+     * Handles GET requests
+     * @param {Hapi/Request} request
+     * @return {string}
+     */
     get(request) {
         return "Hello, world!"
     }
+
+    // post, put, and delete methods may also be used
 }
 
 module.exports = HelloController

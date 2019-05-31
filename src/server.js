@@ -9,7 +9,7 @@ class Server {
    * @param {int}    port       Server port
    * @param {string} routesDir  Directory containing route controllers
    */
-  async start(port, routesDir) {
+  async start(port = 3000, routesDir = process.cwd() + '/routes') {
     process.on('unhandledRejection', err => {
       console.log(err)
       process.exit()
@@ -30,7 +30,7 @@ class Server {
    * Scans routes directory for controllers
    * @param {Hapi.server} server    Hapi.js server instance
    * @param {string}      routeDir  Directory containing route controllers
-   * @return Promise
+   * @return {Promise}
    */
   addRoutes(server, routeDir) {
     return new Promise((resolve, reject) => {
@@ -41,6 +41,10 @@ class Server {
       fs.readdir(routeDir, (err, files) => {
         if (err) {
           reject(err)
+        }
+
+        if (!(files instanceof Array)) {
+          throw new Error("No routes found")
         }
 
         for (let file of files) {
@@ -72,14 +76,16 @@ class Server {
 
                     return h
                       .response({
+                        statusCode: 200,
                         data,
                       })
                       .type('application/json')
                   } catch (err) {
                     return h
                       .response({
+                        statusCode: err.code,
                         error: err.message,
-                        status: err.code,
+                        message: err.message,
                       })
                       .type('application/json')
                       .code(err.code)
