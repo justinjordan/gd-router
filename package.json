@@ -6,14 +6,12 @@
   "dependencies": {
     "@hapi/hapi": "^18.3.1"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [
     "node",
     "router",
     "hapi"
   ],
-  "author": "Justin Jordan",
-  "license": "MIT"
+  "author": "Justin Jordan <jsxule@gmail.com>",
+  "license": "MIT",
+  "repository": "git://github.com/sXule/gd-router"
 }
