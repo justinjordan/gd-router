@@ -1,38 +1,64 @@
 const fs = require('fs')
-const Hapi = require('@hapi/hapi')
+const http = require('http')
 const Controller = require('./controller')
 const ApiController = require('./api-controller')
 
 class Server {
+  constructor() {
+    this.routes = {}
+  }
+
   /**
    * Starts up server
    * @param {int}    port       Server port
    * @param {string} routesDir  Directory containing route controllers
    */
   async start(port = 3000, routesDir = process.cwd() + '/routes') {
-    process.on('unhandledRejection', err => {
-      console.log(err)
-      process.exit()
-    })
+    await this.addRoutes(routesDir)
 
-    const server = Hapi.server({
-      port: port,
-      host: 'localhost',
-    })
+    http.createServer(this.handleRequest.bind(this)).listen(port)
     
-    await this.addRoutes(server, routesDir)
-    await server.start()
-
     console.log("G** D*** Router running on port " + port)
+  }
+
+  async handleRequest(req, res) {
+    for (let routePath in this.routes) {
+      let route = this.routes[routePath]
+
+      routePath = routePath.split('?')[0]
+
+      // route doesn't match
+      if (req.url !== routePath && req.url !== routePath + '/') {
+        continue
+      }
+
+      const method = req.method.toLowerCase()
+      await route[method](req, res)
+
+      return
+    }
+
+    res.writeHead(404, {'Content-Type': 'text/html'})
+    res.write("Route not found")
+    res.end()
+  }
+
+  addRoute(route, method, callback) {
+    route = route.trim()
+
+    if (!this.routes[route]) {
+      this.routes[route] = {}
+    }
+    
+    this.routes[route][method] = callback
   }
 
   /**
    * Scans routes directory for controllers
-   * @param {Hapi.server} server    Hapi.js server instance
    * @param {string}      routeDir  Directory containing route controllers
    * @return {Promise}
    */
-  addRoutes(server, routeDir) {
+  addRoutes(routeDir) {
     return new Promise((resolve, reject) => {
       if (routeDir[0] !== '/') {
         routeDir = __basedir + '/' + routeDir
@@ -65,42 +91,40 @@ class Server {
           }
 
           for (let method of ['get','post','put','delete']) {
-            // add route
-            server.route({
-              method: method.toUpperCase(),
-              path: '/' + route,
-              async handler(request, h) {
-                if (ctrl instanceof ApiController) {
-                  try {
-                    const data = await ctrl[method](request)
+            this.addRoute('/' + route, method, async (req, res) => {
+              try {
+                const data = await ctrl[method](req)
 
-                    return h
-                      .response({
-                        statusCode: 200,
-                        data,
-                      })
-                      .type('application/json')
-                  } catch (err) {
-                    return h
-                      .response({
-                        statusCode: err.code,
-                        error: err.message,
-                        message: err.message,
-                      })
-                      .type('application/json')
-                      .code(err.code)
-                  }
+                if (ctrl instanceof ApiController) {
+                  // RESTful Response
+                  res.writeHead(200, {'Content-Type': 'application/json'})
+                  res.write(JSON.stringify({
+                    statusCode: 200,
+                    data,
+                  }))
                 } else {
-                  try {
-                    const data = await ctrl[method](request)
-                    return h.response(data)
-                  } catch (err) {
-                    return h
-                      .response(err.message)
-                      .code(err.code)
-                  }
+                  // Normal Response
+                  res.writeHead(200, {'Content-Type': 'text/html'})
+                  res.write(data)
                 }
-              },
+              } catch (err) {
+                const statusCode = err.code||500
+
+                if (ctrl instanceof ApiController) {
+                  // RESTful Response
+                  res.writeHead(statusCode, {'Content-Type': 'application/json'})
+                  res.write(JSON.stringify({
+                    statusCode: err.code,
+                    error: err.message,
+                  }))
+                } else {
+                  // Normal Response
+                  res.writeHead(statusCode, {'Content-Type': 'text/html'})
+                  res.write(err.message)
+                }
+              } finally {
+                res.end()
+              }
             })
           }
         }
