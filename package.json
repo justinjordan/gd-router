@@ -1,6 +1,6 @@
 {
   "name": "gd-router",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Why's it so hard? Just give me a G** D*** Router!",
   "main": "index.js",
   "dependencies": {
