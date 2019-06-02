@@ -15,7 +15,5 @@ Use the [SemVer](https://semver.org/) scheme and follow these guidelines:
   - Add a feature
 
 * **DON'T** bump the *MAJOR* version!
-  - This will 
-
 
 ## To be continued...
