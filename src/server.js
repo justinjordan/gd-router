@@ -100,7 +100,6 @@ class Server {
             this.addRoute('/' + route, method, async (req, res) => {
               try {
                 const data = await ctrl[method](req)
-                console.log({data})
 
                 if (typeof data === 'object') {
                   // RESTful Response
