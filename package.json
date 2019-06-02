@@ -3,9 +3,7 @@
   "version": "0.2.0",
   "description": "Why's it so hard? Just give me a G** D*** Router!",
   "main": "index.js",
-  "dependencies": {
-    "@hapi/hapi": "^18.3.1"
-  },
+  "dependencies": {},
   "keywords": [
     "node",
     "router",
