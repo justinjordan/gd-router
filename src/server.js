@@ -99,7 +99,26 @@ class Server {
           for (let method of ['get','post','put','delete']) {
             this.addRoute('/' + route, method, async (req, res) => {
               try {
-                const data = await ctrl[method](new Request(req))
+                let data = ''
+                if (req.method === 'GET') {
+                  data = await ctrl[method](new Request(req))
+                } else {
+                  let body = await (() => {
+                    return new Promise((resolve, reject) => {
+                      let body = ''
+
+                      req.on('data', chunk => {
+                        body += chunk;
+                      })
+              
+                      req.on('end', () => {
+                        resolve(body)
+                      });
+                    })
+                  })() 
+
+                  console.log(body)
+                }
 
                 if (typeof data === 'object') {
                   // RESTful Response
@@ -126,7 +145,7 @@ class Server {
                 } else {
                   // Normal Response
                   res.writeHead(statusCode, {'Content-Type': 'text/html'})
-                  res.write(err.message)
+                  res.write(`Error: ` + err.message)
                 }
               } finally {
                 res.end()

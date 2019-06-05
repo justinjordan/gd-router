@@ -9,19 +9,22 @@ class Request
    *
    * @param {http.ClientRequest} httpRequest 
    */
-  constructor(httpRequest) {
+  constructor(httpRequest, params) {
     const urlParts = url.parse(httpRequest.url)
 
-    // set GET params
-    this.params = {}
-    if (urlParts.query) {
-      for (let param of urlParts.query.split('&')) {
-        if (!param) {
-          continue
-        }
+    this.params = params || {}
 
-        const [key, value] = param.split('=')
-        this.params[key] = value
+    // Add GET params
+    if (httpRequest.method === 'GET') {
+      if (urlParts.query) {
+        for (let param of urlParts.query.split('&')) {
+          if (!param) {
+            continue
+          }
+
+          const [key, value] = param.split('=')
+          this.params[key] = value
+        }
       }
     }
   }
