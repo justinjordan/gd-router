@@ -24,11 +24,10 @@ class Server {
   async handleRequest(req, res) {
     for (let routePath in this.routes) {
       let route = this.routes[routePath]
-
-      routePath = routePath.split('?')[0]
+      let requestPath = req.url.split('?')[0]
 
       // route doesn't match
-      if (req.url !== routePath && req.url !== routePath + '/') {
+      if (requestPath !== routePath && requestPath !== routePath + '/') {
         continue
       }
 
@@ -93,7 +92,7 @@ class Server {
           for (let method of ['get','post','put','delete']) {
             this.addRoute('/' + route, method, async (req, res) => {
               try {
-                const data = await ctrl[method](req)
+                const data = await ctrl[method](new Request(req))
 
                 if (ctrl instanceof ApiController) {
                   // RESTful Response
