@@ -10,7 +10,20 @@ class Request
    * @param {http.ClientRequest} httpRequest 
    */
   constructor(httpRequest) {
-    
+    const urlParts = url.parse(httpRequest.url)
+
+    // set GET params
+    this.params = {}
+    if (urlParts.query) {
+      for (let param of urlParts.query.split('&')) {
+        if (!param) {
+          continue
+        }
+
+        const [key, value] = param.split('=')
+        this.params[key] = value
+      }
+    }
   }
 }
 

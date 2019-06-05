@@ -1,5 +1,6 @@
 const fs = require('fs')
 const http = require('http')
+const Request = require('./request')
 const Controller = require('./controller')
 const ApiController = require('./api-controller')
 
