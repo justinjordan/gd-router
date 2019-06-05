@@ -80,13 +80,19 @@ class Server {
             continue
           }
 
+          let ctrl
           const route = nameParts[1]
           const RouteController = require(routeDir + '/' + route)
-          const ctrl = new RouteController()
-
-          if (!(ctrl instanceof Controller)) {
-            console.error("Route must export Controller instance")
-            continue
+          if (typeof RouteController === 'function') {
+            // Class routes
+            ctrl = new RouteController()
+            if (!(ctrl instanceof Controller)) {
+              console.error("Route must export Controller instance")
+              continue
+            }
+          } else {
+            // Function routes
+            ctrl = RouteController
           }
 
           for (let method of ['get','post','put','delete']) {
@@ -94,7 +100,7 @@ class Server {
               try {
                 const data = await ctrl[method](new Request(req))
 
-                if (ctrl instanceof ApiController) {
+                if (typeof data === 'object') {
                   // RESTful Response
                   res.writeHead(200, {'Content-Type': 'application/json'})
                   res.write(JSON.stringify({
@@ -109,7 +115,7 @@ class Server {
               } catch (err) {
                 const statusCode = err.code||500
 
-                if (ctrl instanceof ApiController) {
+                if (typeof data === 'object') {
                   // RESTful Response
                   res.writeHead(statusCode, {'Content-Type': 'application/json'})
                   res.write(JSON.stringify({
