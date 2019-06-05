@@ -9,7 +9,13 @@
     "router",
     "hapi"
   ],
+  "scripts": {
+    "examples": "pm2-dev start examples/example-server.js"
+  },
   "author": "Justin Jordan <jsxule@gmail.com>",
   "license": "MIT",
-  "repository": "git://github.com/sXule/gd-router"
+  "repository": "git://github.com/sXule/gd-router",
+  "devDependencies": {
+    "pm2": "^3.5.1"
+  }
 }
