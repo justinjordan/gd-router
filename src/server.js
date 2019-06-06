@@ -1,5 +1,6 @@
 const fs = require('fs')
 const http = require('http')
+const Request = require('./request')
 const Controller = require('./controller')
 const ApiController = require('./api-controller')
 
@@ -24,11 +25,10 @@ class Server {
   async handleRequest(req, res) {
     for (let routePath in this.routes) {
       let route = this.routes[routePath]
-
-      routePath = routePath.split('?')[0]
+      let requestPath = req.url.split('?')[0]
 
       // route doesn't match
-      if (req.url !== routePath && req.url !== routePath + '/') {
+      if (requestPath !== routePath && requestPath !== routePath + '/') {
         continue
       }
 
@@ -99,7 +99,26 @@ class Server {
           for (let method of ['get','post','put','delete']) {
             this.addRoute('/' + route, method, async (req, res) => {
               try {
-                const data = await ctrl[method](req)
+                let data = ''
+                if (req.method === 'GET') {
+                  data = await ctrl[method](new Request(req))
+                } else {
+                  let body = await (() => {
+                    return new Promise((resolve, reject) => {
+                      let body = ''
+
+                      req.on('data', chunk => {
+                        body += chunk;
+                      })
+              
+                      req.on('end', () => {
+                        resolve(body)
+                      });
+                    })
+                  })() 
+
+                  console.log(body)
+                }
 
                 if (typeof data === 'object') {
                   // RESTful Response
@@ -126,7 +145,7 @@ class Server {
                 } else {
                   // Normal Response
                   res.writeHead(statusCode, {'Content-Type': 'text/html'})
-                  res.write(err.message)
+                  res.write(`Error: ` + err.message)
                 }
               } finally {
                 res.end()
