@@ -16,6 +16,6 @@
   "license": "MIT",
   "repository": "git://github.com/sXule/gd-router",
   "devDependencies": {
-    "pm2": "^3.5.1"
+    "pm2": "^5.2.0"
   }
 }
